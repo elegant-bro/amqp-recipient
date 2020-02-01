@@ -6,6 +6,10 @@ type Recipient interface {
 	Subscribe() (Job, error)
 }
 
+type Sender interface {
+	Send(p amqp.Publishing) error
+}
+
 type Job interface {
 	Run()
 }
