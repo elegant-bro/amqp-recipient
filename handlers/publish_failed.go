@@ -23,26 +23,27 @@ func NewPublishFailedStd(origin amqpRecipient.JobHandler, connection *amqp.Conne
 	return NewPublishFailed(
 		origin,
 		amqpRecipient.NewAmqpSender(connection, exchange, routingKey),
-		func(d *amqp.Delivery, err error) map[string]string {
-			return map[string]string{
-				"exception-message":  err.Error(),
-				"origin-exchange":    d.Exchange,
-				"origin-routing-key": d.RoutingKey,
-			}
-		},
+		defaultMakeHeaders,
 	)
 }
 
 func (f PublishFailedHandler) Handle(d *amqp.Delivery) (uint8, error) {
 	res, err := f.Origin.Handle(d)
 	if nil != err {
-		newHeaders := d.Headers
+		var newHeaders amqp.Table
+
+		if nil == d.Headers {
+			newHeaders = amqp.Table{}
+		} else {
+			newHeaders = d.Headers
+		}
+
 		for k, v := range f.MakeHeaders(d, err) {
 			newHeaders["x-"+k] = v
 		}
 
 		err := f.Sender.Send(amqp.Publishing{
-			Headers:         d.Headers,
+			Headers:         newHeaders,
 			ContentType:     d.ContentType,
 			ContentEncoding: d.ContentEncoding,
 			DeliveryMode:    d.DeliveryMode,
@@ -63,4 +64,12 @@ func (f PublishFailedHandler) Handle(d *amqp.Delivery) (uint8, error) {
 	}
 
 	return res, nil
+}
+
+func defaultMakeHeaders(d *amqp.Delivery, err error) map[string]string {
+	return map[string]string{
+		"exception-message":  err.Error(),
+		"origin-exchange":    d.Exchange,
+		"origin-routing-key": d.RoutingKey,
+	}
 }

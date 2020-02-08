@@ -7,6 +7,7 @@ type AmqpRecipient struct {
 	Prefetch   int
 	Connection *amqp.Connection
 	Handler    JobHandler
+	OnFail     OnHandlerFails
 }
 
 func (recipient *AmqpRecipient) Subscribe() (Job, error) {
@@ -33,8 +34,5 @@ func (recipient *AmqpRecipient) Subscribe() (Job, error) {
 		return nil, err
 	}
 
-	return &AmqpJob{
-		Deliveries: deliveries,
-		Handler:    recipient.Handler,
-	}, nil
+	return NewAmqpJob(deliveries, recipient.Handler, recipient.OnFail), nil
 }

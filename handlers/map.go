@@ -7,18 +7,23 @@ import (
 )
 
 type MapHandler struct {
-	handlersMap map[string]amqpRecipient.JobHandler
-	keyFn       func(delivery *amqp.Delivery) (string, error)
+	handlersMap   map[string]amqpRecipient.JobHandler
+	keyFn         func(delivery *amqp.Delivery) (string, error)
+	onErrorResult uint8
 }
 
-func NewMapHandler(handlersMap map[string]amqpRecipient.JobHandler, keyFn func(delivery *amqp.Delivery) (string, error)) *MapHandler {
-	return &MapHandler{handlersMap: handlersMap, keyFn: keyFn}
+func NewDefaultMap(handlersMap map[string]amqpRecipient.JobHandler, keyFn func(delivery *amqp.Delivery) (string, error)) *MapHandler {
+	return NewMap(handlersMap, keyFn, amqpRecipient.HandlerAck)
+}
+
+func NewMap(handlersMap map[string]amqpRecipient.JobHandler, keyFn func(delivery *amqp.Delivery) (string, error), onErrorResult uint8) *MapHandler {
+	return &MapHandler{handlersMap: handlersMap, keyFn: keyFn, onErrorResult: onErrorResult}
 }
 
 func (m *MapHandler) Handle(d *amqp.Delivery) (uint8, error) {
 	key, err := m.keyFn(d)
 	if nil != err {
-		return 1, fmt.Errorf("fail to compute handler key: %v", err)
+		return m.onErrorResult, fmt.Errorf("fail to compute handler key: %v", err)
 	}
 
 	handler, ok := m.handlersMap[key]
@@ -26,5 +31,5 @@ func (m *MapHandler) Handle(d *amqp.Delivery) (uint8, error) {
 		return handler.Handle(d)
 	}
 
-	return 1, fmt.Errorf("handler not found for key '%s'", key)
+	return m.onErrorResult, fmt.Errorf("handler not found for key '%s'", key)
 }

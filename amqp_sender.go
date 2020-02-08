@@ -23,5 +23,6 @@ func (a AmqpSender) Send(p amqp.Publishing) error {
 	defer func() {
 		fmt.Println(ch.Close())
 	}()
+
 	return ch.Publish(a.Exchange, a.RoutingKey, false, false, p)
 }
