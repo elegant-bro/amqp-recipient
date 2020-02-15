@@ -74,7 +74,7 @@ func TestMapHandler_HandleKeyFuncFails(t *testing.T) {
 		return
 	}
 
-	if "handler not found for key 'bar'" != err.Error() {
+	if "handler not found: key 'bar'" != err.Error() {
 		t.Error("Unexpected error message")
 	}
 

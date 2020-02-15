@@ -23,7 +23,7 @@ func NewMap(handlersMap map[string]amqpRecipient.JobHandler, keyFn func(delivery
 func (m *MapHandler) Handle(d *amqp.Delivery) (uint8, error) {
 	key, err := m.keyFn(d)
 	if nil != err {
-		return m.onErrorResult, fmt.Errorf("fail to compute handler key: %v", err)
+		return m.onErrorResult, newInternalError(err, "fail to compute handler key")
 	}
 
 	handler, ok := m.handlersMap[key]
@@ -31,5 +31,5 @@ func (m *MapHandler) Handle(d *amqp.Delivery) (uint8, error) {
 		return handler.Handle(d)
 	}
 
-	return m.onErrorResult, fmt.Errorf("handler not found for key '%s'", key)
+	return m.onErrorResult, newInternalError(fmt.Errorf("key '%s'", key), "handler not found")
 }
