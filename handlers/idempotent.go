@@ -20,8 +20,13 @@ func (h *IdempotentHandler) Handle(d *amqp.Delivery) (uint8, error) {
 		return h.origin.Handle(d)
 	}
 
-	if has, err := h.ids.Has(messageId); nil != err || has {
-		return 0, err
+	has, err := h.ids.Has(messageId)
+	if nil != err {
+		return recipient.HandlerReject, newInternalError(err, "can't check message id has been handled")
+	}
+
+	if has {
+		return recipient.HandlerAck, nil
 	}
 
 	return h.ids.Save(messageId, func() (uint8, error) {

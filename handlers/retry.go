@@ -18,10 +18,10 @@ func (r *RetryHandler) Handle(d *amqp.Delivery) (res uint8, err error) {
 	res, err = r.origin.Handle(d)
 	if nil != err {
 		if xDeath(d.Headers) >= r.maxRetries {
-			return 0, err
+			return recipient.HandlerAck, err
 		}
 
-		return 2, nil
+		return recipient.HandlerReject, nil
 	}
 
 	return

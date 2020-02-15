@@ -33,12 +33,12 @@ func TestPublishFailedHandler_HandleWithError(t *testing.T) {
 		t.Error("Sender was not called")
 	}
 
-	if nil != err {
-		t.Errorf("Handler error is %s; nil expected", err.Error())
+	if nil == err {
+		t.Error("Handler error is nil; foo expected")
 	}
 
-	if res != 2 {
-		t.Errorf("Handler result is %d; 2 expected", res)
+	if res != 0 {
+		t.Errorf("Handler result is %d; 0 expected", res)
 	}
 }
 

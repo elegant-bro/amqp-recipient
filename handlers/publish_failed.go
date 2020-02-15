@@ -42,7 +42,7 @@ func (f PublishFailedHandler) Handle(d *amqp.Delivery) (uint8, error) {
 			newHeaders["x-"+k] = v
 		}
 
-		err := f.Sender.Send(amqp.Publishing{
+		pubErr := f.Sender.Send(amqp.Publishing{
 			Headers:         newHeaders,
 			ContentType:     d.ContentType,
 			ContentEncoding: d.ContentEncoding,
@@ -58,9 +58,11 @@ func (f PublishFailedHandler) Handle(d *amqp.Delivery) (uint8, error) {
 			AppId:           d.AppId,
 			Body:            d.Body,
 		})
-		if nil != err {
-			return 1, err
+		if nil != pubErr {
+			return amqpRecipient.HandlerRequeue, newInternalError(pubErr, "sending failed message fails")
 		}
+
+		return amqpRecipient.HandlerAck, err
 	}
 
 	return res, nil
