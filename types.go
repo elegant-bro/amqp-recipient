@@ -6,6 +6,10 @@ type Recipient interface {
 	Subscribe() (Job, error)
 }
 
+type Sender interface {
+	Send(p amqp.Publishing) error
+}
+
 type Job interface {
 	Run()
 }
@@ -18,3 +22,5 @@ type HandledIds interface {
 	Has(key string) (bool, error)
 	Save(key string, fn func() (uint8, error)) (uint8, error)
 }
+
+type OnHandlerFails func(d *amqp.Delivery, err error)

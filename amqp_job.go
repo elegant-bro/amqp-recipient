@@ -1,21 +1,33 @@
 package amqp_recipient
 
-import "github.com/streadway/amqp"
+import (
+	"github.com/streadway/amqp"
+)
 
 type AmqpJob struct {
-	Deliveries <-chan amqp.Delivery
-	Handler    JobHandler
+	deliveries <-chan amqp.Delivery
+	handler    JobHandler
+	onFail     OnHandlerFails
+}
+
+func NewAmqpJob(deliveries <-chan amqp.Delivery, handler JobHandler, onFail OnHandlerFails) *AmqpJob {
+	return &AmqpJob{deliveries: deliveries, handler: handler, onFail: onFail}
 }
 
 func (job *AmqpJob) Run() {
-	for d := range job.Deliveries {
-		result, _ := job.Handler.Handle(&d)
-		if 0 == result {
+	for d := range job.deliveries {
+		result, err := job.handler.Handle(&d)
+
+		if HandlerAck == result {
 			_ = d.Ack(false)
-		} else if 1 == result {
+		} else if HandlerRequeue == result {
 			_ = d.Reject(true)
-		} else {
+		} else if result >= HandlerReject {
 			_ = d.Reject(false)
+		}
+
+		if nil != err {
+			job.onFail(&d, err)
 		}
 	}
 }

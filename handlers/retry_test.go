@@ -74,3 +74,20 @@ func TestRetryHandler_HandleErrRetriesReached(t *testing.T) {
 		t.Errorf("Handler error is %s; foo expected", err.Error())
 	}
 }
+
+func TestRetryHandler_HandleNoHeaders(t *testing.T) {
+	res, err := NewRetry(
+		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+			return 1, errors.New("foo")
+		}),
+		5,
+	).Handle(&amqp.Delivery{})
+
+	if res != 2 {
+		t.Errorf("Handler result is %d; 2 expected", res)
+	}
+
+	if nil != err {
+		t.Errorf("Handler error is %s; nil expected", err.Error())
+	}
+}
