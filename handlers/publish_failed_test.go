@@ -134,3 +134,17 @@ func TestDefaultMakeHeaders(t *testing.T) {
 		t.Errorf("Header 'origin-routing-key' expected to be 'baz', '%s' given", h["origin-routing-key"])
 	}
 }
+
+func TestNewPublishFailedStd(t *testing.T) {
+	h := NewPublishFailedStd(
+		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+			return 0, nil
+		}),
+		&amqp.Connection{},
+		"foo",
+		"bar",
+	)
+	if nil == h {
+		t.Error("Handler is nil")
+	}
+}
