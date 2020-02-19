@@ -10,6 +10,10 @@ type AmqpRecipient struct {
 	OnFail     OnHandlerFails
 }
 
+func NewAmqpRecipient(queue string, prefetch int, connection *amqp.Connection, handler JobHandler, onFail OnHandlerFails) *AmqpRecipient {
+	return &AmqpRecipient{Queue: queue, Prefetch: prefetch, Connection: connection, Handler: handler, OnFail: onFail}
+}
+
 func (recipient *AmqpRecipient) Subscribe() (Job, error) {
 	ch, err := recipient.Connection.Channel()
 	if nil != err {
