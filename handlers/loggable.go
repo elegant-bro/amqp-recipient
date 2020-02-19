@@ -7,10 +7,10 @@ import (
 
 type LoggableHandler struct {
 	origin   recipient.JobHandler
-	writeLog func(d *amqp.Delivery, err error)
+	writeLog recipient.OnHandlerFails
 }
 
-func NewLoggable(origin recipient.JobHandler, writeLog func(d *amqp.Delivery, err error)) *LoggableHandler {
+func NewLoggable(origin recipient.JobHandler, writeLog recipient.OnHandlerFails) *LoggableHandler {
 	return &LoggableHandler{origin: origin, writeLog: writeLog}
 }
 

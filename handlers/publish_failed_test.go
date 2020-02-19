@@ -13,7 +13,7 @@ func TestPublishFailedHandler_HandleWithError(t *testing.T) {
 		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
 			return 2, errors.New("foo")
 		}),
-		amqp_recipient.NewFuncSender(func(p amqp.Publishing) error {
+		amqp_recipient.NewStubSender(func(p amqp.Publishing) error {
 			senderCall++
 
 			if p.Headers["x-bar"] != "baz" {
@@ -48,7 +48,7 @@ func TestPublishFailedHandler_HandleWithSendFails(t *testing.T) {
 		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
 			return 2, errors.New("foo")
 		}),
-		amqp_recipient.NewFuncSender(func(p amqp.Publishing) error {
+		amqp_recipient.NewStubSender(func(p amqp.Publishing) error {
 			senderCall++
 
 			if p.Headers["x-bar"] != "baz" {
@@ -89,7 +89,7 @@ func TestPublishFailedHandler_HandleWithoutError(t *testing.T) {
 		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
 			return 1, nil
 		}),
-		amqp_recipient.NewFuncSender(func(p amqp.Publishing) error {
+		amqp_recipient.NewStubSender(func(p amqp.Publishing) error {
 			senderCall++
 			return nil
 		}),

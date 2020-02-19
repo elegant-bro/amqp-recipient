@@ -8,10 +8,11 @@ import (
 
 type stubIds struct {
 	has bool
+	err error
 }
 
 func (s stubIds) Has(_ string) (bool, error) {
-	return s.has, nil
+	return s.has, s.err
 }
 
 func (s stubIds) Save(_ string, fn func() (uint8, error)) (uint8, error) {
@@ -72,5 +73,27 @@ func TestIdempotentHandler_Handle(t *testing.T) {
 
 	if "foo" != err.Error() {
 		t.Errorf("Handler error is %s; foo expected", err.Error())
+	}
+}
+
+func TestIdempotentHandler_HandleIdsFails(t *testing.T) {
+	res, err := NewIdempotent(
+		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+			return 1, errors.New("foo")
+		}),
+		stubIds{has: false, err: errors.New("bar")},
+	).Handle(&amqp.Delivery{MessageId: "some_id"})
+
+	if res != 2 {
+		t.Errorf("Handler result is %d; 1 expected", res)
+	}
+
+	if nil == err {
+		t.Error("Handler error is nil; bar expected")
+		return
+	}
+
+	if "can't check message id has been handled: bar" != err.Error() {
+		t.Errorf("Handler error is %s; %s expected", err.Error(), "can't check message id has been handled: bar")
 	}
 }
