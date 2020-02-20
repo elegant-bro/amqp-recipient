@@ -3,40 +3,61 @@ package amqp_recipient
 import "github.com/streadway/amqp"
 
 type AmqpRecipient struct {
-	Queue      string
-	Prefetch   int
-	Connection *amqp.Connection
-	Handler    JobHandler
-	OnFail     OnHandlerFails
+	queue          string
+	prefetch       int
+	conn           *amqp.Connection
+	handler        JobHandler
+	onFail         OnHandlerFails
+	consumeOptions ConsumeOptions
 }
 
-func NewAmqpRecipient(queue string, prefetch int, connection *amqp.Connection, handler JobHandler, onFail OnHandlerFails) *AmqpRecipient {
-	return &AmqpRecipient{Queue: queue, Prefetch: prefetch, Connection: connection, Handler: handler, OnFail: onFail}
+func NewDefaultAmqpRecipient(queue string, prefetch int, connection *amqp.Connection, handler JobHandler, onFail OnHandlerFails) *AmqpRecipient {
+	return NewAmqpRecipient(queue, prefetch, connection, handler, onFail, ConsumeOptions{})
+}
+
+func NewAmqpRecipient(queue string, prefetch int, connection *amqp.Connection, handler JobHandler, onFail OnHandlerFails, opt ConsumeOptions) *AmqpRecipient {
+	return &AmqpRecipient{
+		queue:          queue,
+		prefetch:       prefetch,
+		conn:           connection,
+		handler:        handler,
+		onFail:         onFail,
+		consumeOptions: opt,
+	}
 }
 
 func (recipient *AmqpRecipient) Subscribe() (Job, error) {
-	ch, err := recipient.Connection.Channel()
+	ch, err := recipient.conn.Channel()
 	if nil != err {
 		return nil, err
 	}
 
-	err = ch.Qos(recipient.Prefetch, 0, false)
+	err = ch.Qos(recipient.prefetch, 0, false)
 	if nil != err {
 		return nil, err
 	}
 
 	deliveries, err := ch.Consume(
-		recipient.Queue,
-		"",
-		false,
-		false,
-		false,
-		false,
-		nil,
+		recipient.queue,
+		recipient.consumeOptions.Consumer,
+		recipient.consumeOptions.AutoAck,
+		recipient.consumeOptions.Exclusive,
+		recipient.consumeOptions.NoLocal,
+		recipient.consumeOptions.NoWait,
+		recipient.consumeOptions.Args,
 	)
 	if nil != err {
 		return nil, err
 	}
 
-	return NewAmqpJob(deliveries, recipient.Handler, recipient.OnFail), nil
+	return NewAmqpJob(deliveries, recipient.handler, recipient.onFail), nil
+}
+
+type ConsumeOptions struct {
+	Consumer  string
+	AutoAck   bool
+	Exclusive bool
+	NoLocal   bool
+	NoWait    bool
+	Args      amqp.Table
 }
