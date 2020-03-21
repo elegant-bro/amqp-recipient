@@ -2,6 +2,7 @@ package main
 
 import (
 	amqpRecipient "github.com/elegant-bro/amqp-recipient"
+	"github.com/elegant-bro/amqp-recipient/recipients"
 	"github.com/streadway/amqp"
 	"log"
 )
@@ -19,7 +20,7 @@ type sendHandler struct {
 }
 
 // implementation of github.com/elegant-bro/amqp_recipient/JobHandler
-func (s sendHandler) Handle(d *amqp.Delivery) (uint8, error) {
+func (s sendHandler) Handle(_ *amqp.Delivery) (uint8, error) {
 	err := s.api.Send( /*convert delivery to args*/ )
 	if nil != err {
 		return amqpRecipient.HandlerReject, err
@@ -36,7 +37,7 @@ func rabbitConnFromDsn(dsn string) *amqp.Connection {
 
 func main() {
 	// first we create the recipient
-	r := amqpRecipient.NewDefaultAmqpRecipient(
+	r := recipients.NewDefaultAmqpRecipient(
 		"user.registered", // queue name
 		16,                // prefetch count
 		rabbitConnFromDsn("rabbit dsn"),

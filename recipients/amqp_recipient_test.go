@@ -1,4 +1,4 @@
-package amqp_recipient
+package recipients
 
 import "testing"
 
