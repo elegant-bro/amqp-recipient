@@ -14,7 +14,7 @@ func NewRetry(origin recipient.JobHandler, maxRetries int64) *RetryHandler {
 	return &RetryHandler{origin: origin, maxRetries: maxRetries}
 }
 
-func (r *RetryHandler) Handle(d *amqp.Delivery) (res uint8, err error) {
+func (r *RetryHandler) Handle(d amqp.Delivery) (res uint8, err error) {
 	res, err = r.origin.Handle(d)
 	if nil != err {
 		if xDeath(d.Headers) >= r.maxRetries {

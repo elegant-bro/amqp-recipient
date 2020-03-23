@@ -8,19 +8,19 @@ import (
 
 type MapHandler struct {
 	handlersMap   map[string]amqpRecipient.JobHandler
-	keyFn         func(delivery *amqp.Delivery) (string, error)
+	keyFn         func(delivery amqp.Delivery) (string, error)
 	onErrorResult uint8
 }
 
-func NewDefaultMap(handlersMap map[string]amqpRecipient.JobHandler, keyFn func(delivery *amqp.Delivery) (string, error)) *MapHandler {
+func NewDefaultMap(handlersMap map[string]amqpRecipient.JobHandler, keyFn func(delivery amqp.Delivery) (string, error)) *MapHandler {
 	return NewMap(handlersMap, keyFn, amqpRecipient.HandlerAck)
 }
 
-func NewMap(handlersMap map[string]amqpRecipient.JobHandler, keyFn func(delivery *amqp.Delivery) (string, error), onErrorResult uint8) *MapHandler {
+func NewMap(handlersMap map[string]amqpRecipient.JobHandler, keyFn func(delivery amqp.Delivery) (string, error), onErrorResult uint8) *MapHandler {
 	return &MapHandler{handlersMap: handlersMap, keyFn: keyFn, onErrorResult: onErrorResult}
 }
 
-func (m *MapHandler) Handle(d *amqp.Delivery) (uint8, error) {
+func (m *MapHandler) Handle(d amqp.Delivery) (uint8, error) {
 	key, err := m.keyFn(d)
 	if nil != err {
 		return m.onErrorResult, newInternalError(err, "fail to compute handler key")

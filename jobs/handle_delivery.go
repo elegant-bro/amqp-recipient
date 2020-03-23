@@ -6,7 +6,7 @@ import (
 )
 
 func handleDelivery(d amqp.Delivery, handler amqpRecipient.JobHandler, onFail amqpRecipient.OnHandlerFails) {
-	result, err := handler.Handle(&d)
+	result, err := handler.Handle(d)
 
 	if amqpRecipient.HandlerAck == result {
 		_ = d.Ack(false)
@@ -17,6 +17,6 @@ func handleDelivery(d amqp.Delivery, handler amqpRecipient.JobHandler, onFail am
 	}
 
 	if nil != err {
-		onFail(&d, err)
+		onFail(d, err)
 	}
 }

@@ -14,7 +14,7 @@ func NewLoggable(origin recipient.JobHandler, writeLog recipient.OnHandlerFails)
 	return &LoggableHandler{origin: origin, writeLog: writeLog}
 }
 
-func (l *LoggableHandler) Handle(d *amqp.Delivery) (res uint8, err error) {
+func (l *LoggableHandler) Handle(d amqp.Delivery) (res uint8, err error) {
 	res, err = l.origin.Handle(d)
 	if nil != err {
 		l.writeLog(d, err)

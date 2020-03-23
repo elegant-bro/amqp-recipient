@@ -32,14 +32,14 @@ func (s StubJob) Run() {
 }
 
 type StubJobHandler struct {
-	fn func(d *amqp.Delivery) (uint8, error)
+	fn func(d amqp.Delivery) (uint8, error)
 }
 
-func (s StubJobHandler) Handle(d *amqp.Delivery) (uint8, error) {
+func (s StubJobHandler) Handle(d amqp.Delivery) (uint8, error) {
 	return s.fn(d)
 }
 
-func NewStubJobHandler(fn func(d *amqp.Delivery) (uint8, error)) *StubJobHandler {
+func NewStubJobHandler(fn func(d amqp.Delivery) (uint8, error)) *StubJobHandler {
 	return &StubJobHandler{fn}
 }
 

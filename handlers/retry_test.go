@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-func stubXDeathDelivery(count int64) *amqp.Delivery {
-	return &amqp.Delivery{
+func stubXDeathDelivery(count int64) amqp.Delivery {
+	return amqp.Delivery{
 		Headers: amqp.Table{
 			"x-death": []interface{}{
 				amqp.Table{
@@ -21,11 +21,11 @@ func stubXDeathDelivery(count int64) *amqp.Delivery {
 
 func TestRetryHandler_HandleNoErr(t *testing.T) {
 	res, err := NewRetry(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 1, nil
 		}),
 		5,
-	).Handle(&amqp.Delivery{})
+	).Handle(amqp.Delivery{})
 
 	if res != 1 {
 		t.Errorf("Handler result is %d; 1 expected", res)
@@ -38,7 +38,7 @@ func TestRetryHandler_HandleNoErr(t *testing.T) {
 
 func TestRetryHandler_HandleErr(t *testing.T) {
 	res, err := NewRetry(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 1, errors.New("foo")
 		}),
 		5,
@@ -55,7 +55,7 @@ func TestRetryHandler_HandleErr(t *testing.T) {
 
 func TestRetryHandler_HandleErrRetriesReached(t *testing.T) {
 	res, err := NewRetry(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 1, errors.New("foo")
 		}),
 		5,
@@ -77,11 +77,11 @@ func TestRetryHandler_HandleErrRetriesReached(t *testing.T) {
 
 func TestRetryHandler_HandleNoHeaders(t *testing.T) {
 	res, err := NewRetry(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 1, errors.New("foo")
 		}),
 		5,
-	).Handle(&amqp.Delivery{})
+	).Handle(amqp.Delivery{})
 
 	if res != 2 {
 		t.Errorf("Handler result is %d; 2 expected", res)

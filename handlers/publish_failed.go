@@ -8,10 +8,10 @@ import (
 type PublishFailedHandler struct {
 	Origin      amqpRecipient.JobHandler
 	Sender      amqpRecipient.Sender
-	MakeHeaders func(d *amqp.Delivery, err error) map[string]string
+	MakeHeaders func(d amqp.Delivery, err error) map[string]string
 }
 
-func NewPublishFailed(origin amqpRecipient.JobHandler, sender amqpRecipient.Sender, makeHeaders func(d *amqp.Delivery, err error) map[string]string) *PublishFailedHandler {
+func NewPublishFailed(origin amqpRecipient.JobHandler, sender amqpRecipient.Sender, makeHeaders func(d amqp.Delivery, err error) map[string]string) *PublishFailedHandler {
 	return &PublishFailedHandler{
 		Origin:      origin,
 		Sender:      sender,
@@ -27,7 +27,7 @@ func NewPublishFailedStd(origin amqpRecipient.JobHandler, connection *amqp.Conne
 	)
 }
 
-func (f PublishFailedHandler) Handle(d *amqp.Delivery) (uint8, error) {
+func (f PublishFailedHandler) Handle(d amqp.Delivery) (uint8, error) {
 	res, err := f.Origin.Handle(d)
 	if nil != err {
 		var newHeaders amqp.Table
@@ -68,7 +68,7 @@ func (f PublishFailedHandler) Handle(d *amqp.Delivery) (uint8, error) {
 	return res, nil
 }
 
-func defaultMakeHeaders(d *amqp.Delivery, err error) map[string]string {
+func defaultMakeHeaders(d amqp.Delivery, err error) map[string]string {
 	return map[string]string{
 		"exception-message":  err.Error(),
 		"origin-exchange":    d.Exchange,

@@ -21,11 +21,11 @@ func (s stubIds) Save(_ string, fn func() (uint8, error)) (uint8, error) {
 
 func TestIdempotentHandler_HandleEmptyMsgId(t *testing.T) {
 	res, err := NewIdempotent(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 1, errors.New("baz")
 		}),
 		nil,
-	).Handle(&amqp.Delivery{})
+	).Handle(amqp.Delivery{})
 
 	if res != 1 {
 		t.Errorf("Handler result is %d; 1 expected", res)
@@ -43,7 +43,7 @@ func TestIdempotentHandler_HandleEmptyMsgId(t *testing.T) {
 
 func TestIdempotentHandler_HandleHasMsg(t *testing.T) {
 	res, err := NewIdempotent(nil, stubIds{has: true}).
-		Handle(&amqp.Delivery{MessageId: "some_id"})
+		Handle(amqp.Delivery{MessageId: "some_id"})
 
 	if res != 0 {
 		t.Errorf("Handler result is %d; 0 expected", res)
@@ -56,11 +56,11 @@ func TestIdempotentHandler_HandleHasMsg(t *testing.T) {
 
 func TestIdempotentHandler_Handle(t *testing.T) {
 	res, err := NewIdempotent(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 1, errors.New("foo")
 		}),
 		stubIds{has: false},
-	).Handle(&amqp.Delivery{MessageId: "some_id"})
+	).Handle(amqp.Delivery{MessageId: "some_id"})
 
 	if res != 1 {
 		t.Errorf("Handler result is %d; 1 expected", res)
@@ -78,11 +78,11 @@ func TestIdempotentHandler_Handle(t *testing.T) {
 
 func TestIdempotentHandler_HandleIdsFails(t *testing.T) {
 	res, err := NewIdempotent(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 1, errors.New("foo")
 		}),
 		stubIds{has: false, err: errors.New("bar")},
-	).Handle(&amqp.Delivery{MessageId: "some_id"})
+	).Handle(amqp.Delivery{MessageId: "some_id"})
 
 	if res != 2 {
 		t.Errorf("Handler result is %d; 1 expected", res)

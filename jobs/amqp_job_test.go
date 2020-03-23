@@ -25,11 +25,11 @@ func TestAmqpJob_Run(t *testing.T) {
 	wg.Add(5)
 	job := NewAmqpJob(
 		queue(5),
-		amqp_recipient.NewStubJobHandler(func(d *amqp.Delivery) (u uint8, err error) {
+		amqp_recipient.NewStubJobHandler(func(d amqp.Delivery) (u uint8, err error) {
 			wg.Done()
 			return amqp_recipient.HandlerDoNothing, nil
 		}),
-		func(d *amqp.Delivery, err error) {
+		func(d amqp.Delivery, err error) {
 
 		},
 	)
