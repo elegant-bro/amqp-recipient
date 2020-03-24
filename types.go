@@ -1,6 +1,8 @@
 package amqp_recipient
 
-import "github.com/streadway/amqp"
+import (
+	"github.com/streadway/amqp"
+)
 
 type Recipient interface {
 	Subscribe() (Job, error)
@@ -15,7 +17,7 @@ type Job interface {
 }
 
 type JobHandler interface {
-	Handle(d *amqp.Delivery) (uint8, error)
+	Handle(d amqp.Delivery) (uint8, error)
 }
 
 type HandledIds interface {
@@ -23,4 +25,4 @@ type HandledIds interface {
 	Save(key string, fn func() (uint8, error)) (uint8, error)
 }
 
-type OnHandlerFails func(d *amqp.Delivery, err error)
+type OnHandlerFails func(d amqp.Delivery, err error)

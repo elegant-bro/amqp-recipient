@@ -1,4 +1,4 @@
-package amqp_recipient
+package recipients
 
 import "testing"
 
@@ -37,9 +37,5 @@ func TestNewDefaultAmqpRecipient(t *testing.T) {
 
 	if r.consumeOptions.AutoAck {
 		t.Error("Options AutoAck expected to be false")
-	}
-
-	if "" != r.consumeOptions.Consumer {
-		t.Errorf("Options Consumer expected to be empty string, %s given", r.consumeOptions.Consumer)
 	}
 }

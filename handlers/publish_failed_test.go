@@ -10,7 +10,7 @@ import (
 func TestPublishFailedHandler_HandleWithError(t *testing.T) {
 	senderCall := 0
 	h := NewPublishFailed(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 2, errors.New("foo")
 		}),
 		amqp_recipient.NewStubSender(func(p amqp.Publishing) error {
@@ -22,12 +22,12 @@ func TestPublishFailedHandler_HandleWithError(t *testing.T) {
 
 			return nil
 		}),
-		func(d *amqp.Delivery, err error) map[string]string {
+		func(d amqp.Delivery, err error) map[string]string {
 			return map[string]string{"bar": "baz"}
 		},
 	)
 
-	res, err := h.Handle(&amqp.Delivery{})
+	res, err := h.Handle(amqp.Delivery{})
 
 	if 0 == senderCall {
 		t.Error("Sender was not called")
@@ -45,7 +45,7 @@ func TestPublishFailedHandler_HandleWithError(t *testing.T) {
 func TestPublishFailedHandler_HandleWithSendFails(t *testing.T) {
 	senderCall := 0
 	h := NewPublishFailed(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 2, errors.New("foo")
 		}),
 		amqp_recipient.NewStubSender(func(p amqp.Publishing) error {
@@ -61,12 +61,12 @@ func TestPublishFailedHandler_HandleWithSendFails(t *testing.T) {
 
 			return errors.New("bar")
 		}),
-		func(d *amqp.Delivery, err error) map[string]string {
+		func(d amqp.Delivery, err error) map[string]string {
 			return map[string]string{"bar": "baz"}
 		},
 	)
 
-	res, err := h.Handle(&amqp.Delivery{
+	res, err := h.Handle(amqp.Delivery{
 		Headers: map[string]interface{}{"x-origin": "hello"},
 	})
 
@@ -86,19 +86,19 @@ func TestPublishFailedHandler_HandleWithSendFails(t *testing.T) {
 func TestPublishFailedHandler_HandleWithoutError(t *testing.T) {
 	senderCall := 0
 	h := NewPublishFailed(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 1, nil
 		}),
 		amqp_recipient.NewStubSender(func(p amqp.Publishing) error {
 			senderCall++
 			return nil
 		}),
-		func(d *amqp.Delivery, err error) map[string]string {
+		func(d amqp.Delivery, err error) map[string]string {
 			return map[string]string{"bar": "baz"}
 		},
 	)
 
-	res, err := h.Handle(&amqp.Delivery{})
+	res, err := h.Handle(amqp.Delivery{})
 
 	if 0 != senderCall {
 		t.Error("Sender call is not expected")
@@ -115,7 +115,7 @@ func TestPublishFailedHandler_HandleWithoutError(t *testing.T) {
 
 func TestDefaultMakeHeaders(t *testing.T) {
 	h := defaultMakeHeaders(
-		&amqp.Delivery{
+		amqp.Delivery{
 			Exchange:   "bar",
 			RoutingKey: "baz",
 		},
@@ -137,7 +137,7 @@ func TestDefaultMakeHeaders(t *testing.T) {
 
 func TestNewPublishFailedStd(t *testing.T) {
 	h := NewPublishFailedStd(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 0, nil
 		}),
 		&amqp.Connection{},

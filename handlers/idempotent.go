@@ -14,7 +14,7 @@ func NewIdempotent(origin recipient.JobHandler, ids recipient.HandledIds) *Idemp
 	return &IdempotentHandler{origin: origin, ids: ids}
 }
 
-func (h *IdempotentHandler) Handle(d *amqp.Delivery) (uint8, error) {
+func (h IdempotentHandler) Handle(d amqp.Delivery) (uint8, error) {
 	messageId := d.MessageId
 	if len(messageId) == 0 {
 		return h.origin.Handle(d)

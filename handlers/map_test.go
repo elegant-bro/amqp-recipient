@@ -10,20 +10,20 @@ import (
 func TestMapHandler_Handle(t *testing.T) {
 	res, err := NewDefaultMap(
 		map[string]amqpRecipient.JobHandler{
-			"foo": NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+			"foo": NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 				return 0, errors.New("foo call")
 			}),
-			"bar": NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+			"bar": NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 				return 1, nil
 			}),
-			"baz": NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+			"baz": NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 				return 0, errors.New("baz call")
 			}),
 		},
-		func(delivery *amqp.Delivery) (s string, err error) {
+		func(delivery amqp.Delivery) (s string, err error) {
 			return "bar", nil
 		},
-	).Handle(&amqp.Delivery{})
+	).Handle(amqp.Delivery{})
 
 	if res != 1 {
 		t.Errorf("Handler result is %d; 1 expected", res)
@@ -37,14 +37,14 @@ func TestMapHandler_Handle(t *testing.T) {
 func TestMapHandler_HandleEmptyMap(t *testing.T) {
 	res, err := NewDefaultMap(
 		map[string]amqpRecipient.JobHandler{
-			"foo": NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+			"foo": NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 				return 1, nil
 			}),
 		},
-		func(delivery *amqp.Delivery) (s string, err error) {
+		func(delivery amqp.Delivery) (s string, err error) {
 			return "", errors.New("bar")
 		},
-	).Handle(&amqp.Delivery{})
+	).Handle(amqp.Delivery{})
 
 	if res != 0 {
 		t.Errorf("Handler result is %d; 0 expected", res)
@@ -63,11 +63,11 @@ func TestMapHandler_HandleEmptyMap(t *testing.T) {
 func TestMapHandler_HandleKeyFuncFails(t *testing.T) {
 	res, err := NewMap(
 		map[string]amqpRecipient.JobHandler{},
-		func(delivery *amqp.Delivery) (s string, err error) {
+		func(delivery amqp.Delivery) (s string, err error) {
 			return "bar", nil
 		},
 		2,
-	).Handle(&amqp.Delivery{})
+	).Handle(amqp.Delivery{})
 
 	if nil == err {
 		t.Errorf("Handler error expected")

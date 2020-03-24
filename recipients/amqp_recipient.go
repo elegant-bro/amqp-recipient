@@ -1,21 +1,40 @@
-package amqp_recipient
+package recipients
 
-import "github.com/streadway/amqp"
+import (
+	"fmt"
+	"github.com/elegant-bro/amqp-recipient"
+	"github.com/elegant-bro/amqp-recipient/jobs"
+	"github.com/streadway/amqp"
+	"math/rand"
+)
 
 type AmqpRecipient struct {
 	queue          string
 	prefetch       int
 	conn           *amqp.Connection
-	handler        JobHandler
-	onFail         OnHandlerFails
+	handler        amqp_recipient.JobHandler
+	onFail         amqp_recipient.OnHandlerFails
 	consumeOptions ConsumeOptions
 }
 
-func NewDefaultAmqpRecipient(queue string, prefetch int, connection *amqp.Connection, handler JobHandler, onFail OnHandlerFails) *AmqpRecipient {
+func NewDefaultAmqpRecipient(
+	queue string,
+	prefetch int,
+	connection *amqp.Connection,
+	handler amqp_recipient.JobHandler,
+	onFail amqp_recipient.OnHandlerFails,
+) *AmqpRecipient {
 	return NewAmqpRecipient(queue, prefetch, connection, handler, onFail, ConsumeOptions{})
 }
 
-func NewAmqpRecipient(queue string, prefetch int, connection *amqp.Connection, handler JobHandler, onFail OnHandlerFails, opt ConsumeOptions) *AmqpRecipient {
+func NewAmqpRecipient(
+	queue string,
+	prefetch int,
+	connection *amqp.Connection,
+	handler amqp_recipient.JobHandler,
+	onFail amqp_recipient.OnHandlerFails,
+	opt ConsumeOptions,
+) *AmqpRecipient {
 	return &AmqpRecipient{
 		queue:          queue,
 		prefetch:       prefetch,
@@ -26,7 +45,7 @@ func NewAmqpRecipient(queue string, prefetch int, connection *amqp.Connection, h
 	}
 }
 
-func (recipient *AmqpRecipient) Subscribe() (Job, error) {
+func (recipient *AmqpRecipient) Subscribe() (amqp_recipient.Job, error) {
 	ch, err := recipient.conn.Channel()
 	if nil != err {
 		return nil, err
@@ -37,9 +56,10 @@ func (recipient *AmqpRecipient) Subscribe() (Job, error) {
 		return nil, err
 	}
 
+	tag := fmt.Sprintf("%d", rand.Int())
 	deliveries, err := ch.Consume(
 		recipient.queue,
-		recipient.consumeOptions.Consumer,
+		tag,
 		recipient.consumeOptions.AutoAck,
 		recipient.consumeOptions.Exclusive,
 		recipient.consumeOptions.NoLocal,
@@ -50,14 +70,5 @@ func (recipient *AmqpRecipient) Subscribe() (Job, error) {
 		return nil, err
 	}
 
-	return NewAmqpJob(deliveries, recipient.handler, recipient.onFail), nil
-}
-
-type ConsumeOptions struct {
-	Consumer  string
-	AutoAck   bool
-	Exclusive bool
-	NoLocal   bool
-	NoWait    bool
-	Args      amqp.Table
+	return jobs.NewAmqpJob(deliveries, recipient.handler, recipient.onFail), nil
 }

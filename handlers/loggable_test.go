@@ -8,14 +8,14 @@ import (
 
 func TestLoggableHandler_Handle(t *testing.T) {
 	res, err := NewLoggable(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			if "foo" != string(d.Body) {
 				t.Errorf("Message body is %s; foo expected", string(d.Body))
 			}
 			return 1, nil
 		}),
 		nil,
-	).Handle(&amqp.Delivery{Body: []byte("foo")})
+	).Handle(amqp.Delivery{Body: []byte("foo")})
 
 	if res != 1 {
 		t.Errorf("Handler result is %d; 1 expected", res)
@@ -28,10 +28,10 @@ func TestLoggableHandler_Handle(t *testing.T) {
 
 func TestLoggableHandler_HandleErr(t *testing.T) {
 	res, err := NewLoggable(
-		NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+		NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 			return 1, errors.New("bar")
 		}),
-		func(d *amqp.Delivery, err error) {
+		func(d amqp.Delivery, err error) {
 			if "foo" != string(d.Body) {
 				t.Errorf("Message body is %s; foo expected", string(d.Body))
 			}
@@ -40,7 +40,7 @@ func TestLoggableHandler_HandleErr(t *testing.T) {
 				t.Errorf("Handler error is %s; bar expected", err.Error())
 			}
 		},
-	).Handle(&amqp.Delivery{Body: []byte("foo")})
+	).Handle(amqp.Delivery{Body: []byte("foo")})
 
 	if res != 1 {
 		t.Errorf("Handler result is %d; 1 expected", res)

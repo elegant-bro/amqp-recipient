@@ -7,9 +7,9 @@ import (
 )
 
 func TestFuncHandler_Handle(t *testing.T) {
-	res, err := NewFunc(func(d *amqp.Delivery) (u uint8, err error) {
+	res, err := NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 		return 1, errors.New("foo")
-	}).Handle(&amqp.Delivery{})
+	}).Handle(amqp.Delivery{})
 
 	if res != 1 {
 		t.Errorf("Handler result is %d; 1 expected", res)
