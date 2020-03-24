@@ -2,9 +2,12 @@ package recipients
 
 import (
 	"context"
+	"fmt"
 	"github.com/elegant-bro/amqp-recipient"
 	"github.com/elegant-bro/amqp-recipient/jobs"
 	"github.com/streadway/amqp"
+	"log"
+	"math/rand"
 )
 
 type CancelableAmqpRecipient struct {
@@ -59,9 +62,10 @@ func (recipient *CancelableAmqpRecipient) Subscribe() (amqp_recipient.Job, error
 		return nil, err
 	}
 
+	tag := fmt.Sprintf("%d", rand.Int())
 	deliveries, err := ch.Consume(
 		recipient.queue,
-		recipient.consumeOptions.Consumer,
+		tag,
 		recipient.consumeOptions.AutoAck,
 		recipient.consumeOptions.Exclusive,
 		recipient.consumeOptions.NoLocal,
@@ -71,6 +75,14 @@ func (recipient *CancelableAmqpRecipient) Subscribe() (amqp_recipient.Job, error
 	if nil != err {
 		return nil, err
 	}
+
+	go func() {
+		<-recipient.ctx.Done()
+		if err := ch.Cancel(tag, false); nil != err {
+			log.Print(err)
+		}
+
+	}()
 
 	return jobs.NewCancelableAmqpJob(recipient.ctx, deliveries, recipient.handler, recipient.onFail), nil
 }

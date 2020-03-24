@@ -1,6 +1,8 @@
 package amqp_recipient
 
-import "github.com/streadway/amqp"
+import (
+	"github.com/streadway/amqp"
+)
 
 type Recipient interface {
 	Subscribe() (Job, error)

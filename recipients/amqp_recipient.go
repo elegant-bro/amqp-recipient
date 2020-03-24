@@ -1,9 +1,11 @@
 package recipients
 
 import (
+	"fmt"
 	"github.com/elegant-bro/amqp-recipient"
 	"github.com/elegant-bro/amqp-recipient/jobs"
 	"github.com/streadway/amqp"
+	"math/rand"
 )
 
 type AmqpRecipient struct {
@@ -54,9 +56,10 @@ func (recipient *AmqpRecipient) Subscribe() (amqp_recipient.Job, error) {
 		return nil, err
 	}
 
+	tag := fmt.Sprintf("%d", rand.Int())
 	deliveries, err := ch.Consume(
 		recipient.queue,
-		recipient.consumeOptions.Consumer,
+		tag,
 		recipient.consumeOptions.AutoAck,
 		recipient.consumeOptions.Exclusive,
 		recipient.consumeOptions.NoLocal,
