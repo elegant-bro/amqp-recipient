@@ -2,7 +2,6 @@ package amqp_recipient
 
 import (
 	"errors"
-	"sync"
 	"testing"
 )
 
@@ -31,20 +30,18 @@ func TestOneRunEntry(t *testing.T) {
 }
 
 func TestRun_All(t *testing.T) {
-	var wg sync.WaitGroup
+
 	runCalled := 0
 	run := NewRun(
 		[]RunEntry{
 			OneRunEntry(
 				NoErrorStubRecipient(NewStubJob(func() {
 					runCalled++
-					wg.Done()
 				})),
 			),
 			NewRunEntry(
 				NoErrorStubRecipient(NewStubJob(func() {
 					runCalled++
-					wg.Done()
 				})), 2,
 			),
 		},
@@ -53,9 +50,34 @@ func TestRun_All(t *testing.T) {
 		},
 	)
 
-	wg.Add(3)
 	run.All()
-	wg.Wait()
+
+	if 3 != runCalled {
+		t.Errorf("expected job run called 3 times, %d happens", runCalled)
+	}
+}
+
+func TestRun_AllAsync(t *testing.T) {
+	runCalled := 0
+	run := NewRun(
+		[]RunEntry{
+			OneRunEntry(
+				NoErrorStubRecipient(NewStubJob(func() {
+					runCalled++
+				})),
+			),
+			NewRunEntry(
+				NoErrorStubRecipient(NewStubJob(func() {
+					runCalled++
+				})), 2,
+			),
+		},
+		func(err error) {
+			t.Error("unexpected call")
+		},
+	)
+
+	<-run.AllAsync()
 
 	if 3 != runCalled {
 		t.Errorf("expected job run called 3 times, %d happens", runCalled)
@@ -63,7 +85,6 @@ func TestRun_All(t *testing.T) {
 }
 
 func TestRun_AllFail(t *testing.T) {
-	var wg sync.WaitGroup
 	runCalled := 0
 	run := NewRun(
 		[]RunEntry{
@@ -75,19 +96,15 @@ func TestRun_AllFail(t *testing.T) {
 			NewRunEntry(
 				NoErrorStubRecipient(NewStubJob(func() {
 					runCalled++
-					wg.Done()
 				})), 2,
 			),
 		},
 		func(err error) {
 			runCalled++
-			wg.Done()
 		},
 	)
 
-	wg.Add(3)
 	run.All()
-	wg.Wait()
 
 	if 3 != runCalled {
 		t.Errorf("expected job run called 3 times, %d happens", runCalled)

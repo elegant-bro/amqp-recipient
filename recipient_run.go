@@ -1,5 +1,7 @@
 package amqp_recipient
 
+import "sync"
+
 type Run struct {
 	entries []RunEntry
 	onFail  func(err error)
@@ -22,9 +24,25 @@ func (run *Run) All() {
 		}
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(len(jobs))
 	for _, readyJob := range jobs {
-		go readyJob.Run()
+		go func() {
+			defer wg.Done()
+			readyJob.Run()
+		}()
 	}
+	wg.Wait()
+}
+
+func (run *Run) AllAsync() <-chan error {
+	done := make(chan error)
+	go func() {
+		defer close(done)
+		run.All()
+	}()
+
+	return done
 }
 
 type RunEntry struct {
