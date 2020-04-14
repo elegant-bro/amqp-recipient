@@ -27,10 +27,10 @@ func (run *Run) All() {
 	var wg sync.WaitGroup
 	wg.Add(len(jobs))
 	for _, readyJob := range jobs {
-		go func() {
+		go func(j Job) {
 			defer wg.Done()
-			readyJob.Run()
-		}()
+			j.Run()
+		}(readyJob)
 	}
 	wg.Wait()
 }
