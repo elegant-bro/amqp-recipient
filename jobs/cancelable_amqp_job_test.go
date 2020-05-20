@@ -58,7 +58,7 @@ func TestCancelableAmqpJob_RunDone(t *testing.T) {
 		return deliveries
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 	defer cancel()
 
 	call := 0
