@@ -11,11 +11,11 @@ type SkipHandler struct {
 	res    uint8
 }
 
-func SkipAckHandler(origin recipient.JobHandler, skip func(d amqp.Delivery) bool) *SkipHandler {
-	return NewSkipHandler(origin, skip, recipient.HandlerAck)
+func NewSkipAck(origin recipient.JobHandler, skip func(d amqp.Delivery) bool) *SkipHandler {
+	return NewSkip(origin, skip, recipient.HandlerAck)
 }
 
-func NewSkipHandler(origin recipient.JobHandler, skip func(d amqp.Delivery) bool, res uint8) *SkipHandler {
+func NewSkip(origin recipient.JobHandler, skip func(d amqp.Delivery) bool, res uint8) *SkipHandler {
 	return &SkipHandler{origin: origin, skip: skip, res: res}
 }
 
