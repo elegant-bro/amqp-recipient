@@ -8,7 +8,7 @@ import (
 )
 
 func TestSkipHandler_HandleSkipped(t *testing.T) {
-	res, err := NewSkipHandler(
+	res, err := NewSkip(
 		NewFunc(func(d amqp.Delivery) (uint8, error) {
 			return recipient.HandlerReject, errors.New("foo")
 		}),
@@ -30,7 +30,7 @@ func TestSkipHandler_HandleSkipped(t *testing.T) {
 }
 
 func TestSkipHandler_HandleNotSkipped(t *testing.T) {
-	res, err := NewSkipHandler(
+	res, err := NewSkip(
 		NewFunc(func(d amqp.Delivery) (uint8, error) {
 			return recipient.HandlerReject, errors.New("foo")
 		}),
@@ -58,7 +58,7 @@ func TestSkipHandler_HandleNotSkipped(t *testing.T) {
 
 func TestSkipHandler_HandleSkipCalled(t *testing.T) {
 	skipCall := 0
-	_, _ = NewSkipHandler(
+	_, _ = NewSkip(
 		NewFunc(func(d amqp.Delivery) (uint8, error) {
 			return recipient.HandlerReject, errors.New("foo")
 		}),
@@ -81,8 +81,8 @@ func TestSkipHandler_HandleSkipCalled(t *testing.T) {
 	}
 }
 
-func TestSkipAckHandler(t *testing.T) {
-	h := SkipAckHandler(
+func TestNewSkipAck(t *testing.T) {
+	h := NewSkipAck(
 		NewFunc(func(d amqp.Delivery) (uint8, error) {
 			return recipient.HandlerReject, errors.New("foo")
 		}),
