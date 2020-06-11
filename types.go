@@ -8,6 +8,11 @@ type Recipient interface {
 	Subscribe() (Job, error)
 }
 
+type Deliveries interface {
+	All() (<-chan amqp.Delivery, error)
+	Close() error
+}
+
 type Sender interface {
 	Send(p amqp.Publishing) error
 }
