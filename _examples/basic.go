@@ -19,8 +19,8 @@ type sendHandler struct {
 	api *Api
 }
 
-// implementation of github.com/elegant-bro/amqp_recipient/JobHandler
-func (s sendHandler) Handle(_ *amqp.Delivery) (uint8, error) {
+// Handle implementation of github.com/elegant-bro/amqp_recipient/JobHandler
+func (s sendHandler) Handle(_ amqp.Delivery) (uint8, error) {
 	err := s.api.Send( /*convert delivery to args*/ )
 	if nil != err {
 		return amqpRecipient.HandlerReject, err
@@ -42,7 +42,7 @@ func main() {
 		16,                // prefetch count
 		rabbitConnFromDsn("rabbit dsn"),
 		&sendHandler{&Api{}},
-		func(d *amqp.Delivery, err error) {
+		func(d amqp.Delivery, err error) {
 			log.Printf("Message with id '%s' fails: %v", d.MessageId, err)
 		},
 	)
