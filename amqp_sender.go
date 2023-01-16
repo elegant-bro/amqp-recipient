@@ -21,7 +21,9 @@ func (a AmqpSender) Send(p amqp.Publishing) error {
 		return err
 	}
 	defer func() {
-		fmt.Println(ch.Close())
+		if err := ch.Close(); nil != err {
+			fmt.Println("closing AmqpSender channel failed: ", err)
+		}
 	}()
 
 	return ch.Publish(a.Exchange, a.RoutingKey, false, false, p)

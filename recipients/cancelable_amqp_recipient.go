@@ -6,7 +6,6 @@ import (
 	"github.com/elegant-bro/amqp-recipient"
 	"github.com/elegant-bro/amqp-recipient/jobs"
 	"github.com/streadway/amqp"
-	"log"
 	"math/rand"
 )
 
@@ -79,7 +78,7 @@ func (recipient *CancelableAmqpRecipient) Subscribe() (amqp_recipient.Job, error
 	go func() {
 		<-recipient.ctx.Done()
 		if err := ch.Cancel(tag, false); nil != err {
-			log.Print(err)
+			fmt.Println("CancelableAmqpRecipient channel canceling failed: ", err)
 		}
 
 	}()
