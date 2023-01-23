@@ -1,6 +1,6 @@
 package handlers
 
-import "github.com/streadway/amqp"
+import amqp "github.com/rabbitmq/amqp091-go"
 
 type FuncHandler struct {
 	fn func(d amqp.Delivery) (uint8, error)

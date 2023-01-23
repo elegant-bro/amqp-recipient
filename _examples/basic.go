@@ -3,7 +3,7 @@ package main
 import (
 	amqpRecipient "github.com/elegant-bro/amqp-recipient"
 	"github.com/elegant-bro/amqp-recipient/recipients"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 )
 

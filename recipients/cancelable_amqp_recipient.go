@@ -3,9 +3,9 @@ package recipients
 import (
 	"context"
 	"fmt"
-	"github.com/elegant-bro/amqp-recipient"
+	amqp_recipient "github.com/elegant-bro/amqp-recipient"
 	"github.com/elegant-bro/amqp-recipient/jobs"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"math/rand"
 )
 
