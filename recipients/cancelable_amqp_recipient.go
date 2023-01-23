@@ -53,12 +53,12 @@ func NewCancelableAmqpRecipient(
 func (recipient *CancelableAmqpRecipient) Subscribe() (amqp_recipient.Job, error) {
 	ch, err := recipient.conn.Channel()
 	if nil != err {
-		return nil, err
+		return nil, fmt.Errorf("recipient for %s queue conn.Channel fails: %w", recipient.queue, err)
 	}
 
 	err = ch.Qos(recipient.prefetch, 0, false)
 	if nil != err {
-		return nil, err
+		return nil, fmt.Errorf("recipient for %s queue channel.Qos fails: %w", recipient.queue, err)
 	}
 
 	tag := fmt.Sprintf("%d", rand.Int())
@@ -72,15 +72,16 @@ func (recipient *CancelableAmqpRecipient) Subscribe() (amqp_recipient.Job, error
 		recipient.consumeOptions.Args,
 	)
 	if nil != err {
-		return nil, err
+		return nil, fmt.Errorf("consuming %s queue, tag %s fails: %w", recipient.queue, tag, err)
 	}
 
 	go func() {
 		<-recipient.ctx.Done()
-		if err := ch.Cancel(tag, false); nil != err {
-			fmt.Println("CancelableAmqpRecipient channel canceling failed: ", err)
+		if !recipient.conn.IsClosed() {
+			if err := ch.Cancel(tag, false); nil != err {
+				fmt.Println("CancelableAmqpRecipient channel canceling failed: ", err)
+			}
 		}
-
 	}()
 
 	return jobs.NewCancelableAmqpJob(recipient.ctx, deliveries, recipient.handler, recipient.onFail), nil
