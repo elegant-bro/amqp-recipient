@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	amqpRecipient "github.com/elegant-bro/amqp-recipient"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type MapHandler struct {

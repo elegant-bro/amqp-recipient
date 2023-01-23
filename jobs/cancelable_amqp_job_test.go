@@ -3,7 +3,7 @@ package jobs
 import (
 	"context"
 	amqpRecipient "github.com/elegant-bro/amqp-recipient"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"sync"
 	"testing"
 	"time"

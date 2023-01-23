@@ -2,7 +2,7 @@ package jobs
 
 import (
 	amqpRecipient "github.com/elegant-bro/amqp-recipient"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func handleDelivery(d amqp.Delivery, handler amqpRecipient.JobHandler, onFail amqpRecipient.OnHandlerFails) {
