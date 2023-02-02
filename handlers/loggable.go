@@ -1,16 +1,16 @@
 package handlers
 
 import (
-	recipient "github.com/elegant-bro/amqp-recipient"
+	rcp "github.com/elegant-bro/amqp-recipient"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type LoggableHandler struct {
-	origin   recipient.JobHandler
-	writeLog recipient.OnHandlerFails
+	origin   rcp.JobHandler
+	writeLog rcp.OnHandlerFails
 }
 
-func NewLoggable(origin recipient.JobHandler, writeLog recipient.OnHandlerFails) *LoggableHandler {
+func NewLoggable(origin rcp.JobHandler, writeLog rcp.OnHandlerFails) rcp.JobHandler {
 	return &LoggableHandler{origin: origin, writeLog: writeLog}
 }
 

@@ -1,12 +1,15 @@
 package handlers
 
-import amqp "github.com/rabbitmq/amqp091-go"
+import (
+	rcp "github.com/elegant-bro/amqp-recipient"
+	amqp "github.com/rabbitmq/amqp091-go"
+)
 
 type FuncHandler struct {
 	fn func(d amqp.Delivery) (uint8, error)
 }
 
-func NewFunc(fn func(d amqp.Delivery) (uint8, error)) *FuncHandler {
+func NewFunc(fn func(d amqp.Delivery) (uint8, error)) rcp.JobHandler {
 	return &FuncHandler{fn: fn}
 }
 

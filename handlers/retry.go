@@ -1,16 +1,16 @@
 package handlers
 
 import (
-	recipient "github.com/elegant-bro/amqp-recipient"
+	rcp "github.com/elegant-bro/amqp-recipient"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type RetryHandler struct {
-	origin     recipient.JobHandler
+	origin     rcp.JobHandler
 	maxRetries int64
 }
 
-func NewRetry(origin recipient.JobHandler, maxRetries int64) *RetryHandler {
+func NewRetry(origin rcp.JobHandler, maxRetries int64) rcp.JobHandler {
 	return &RetryHandler{origin: origin, maxRetries: maxRetries}
 }
 
@@ -18,10 +18,10 @@ func (r *RetryHandler) Handle(d amqp.Delivery) (res uint8, err error) {
 	res, err = r.origin.Handle(d)
 	if nil != err {
 		if xDeath(d.Headers) >= r.maxRetries {
-			return recipient.HandlerAck, err
+			return rcp.HandlerAck, err
 		}
 
-		return recipient.HandlerReject, nil
+		return rcp.HandlerReject, nil
 	}
 
 	return

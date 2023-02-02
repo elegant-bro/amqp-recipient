@@ -1,35 +1,31 @@
 package handlers
 
 import (
-	recipient "github.com/elegant-bro/amqp-recipient"
+	rcp "github.com/elegant-bro/amqp-recipient"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type IdempotentHandler struct {
-	origin recipient.JobHandler
-	ids    recipient.HandledIds
-}
+func NewIdempotent(origin rcp.JobHandler, ids rcp.HandledIds) rcp.JobHandler {
+	return &WrapHandler{
+		origin: origin,
+		wrapper: func(d amqp.Delivery, wrapped rcp.JobHandler) (uint8, error) {
+			messageId := d.MessageId
+			if len(messageId) == 0 {
+				return wrapped.Handle(d)
+			}
 
-func NewIdempotent(origin recipient.JobHandler, ids recipient.HandledIds) *IdempotentHandler {
-	return &IdempotentHandler{origin: origin, ids: ids}
-}
+			has, err := ids.Has(messageId)
+			if nil != err {
+				return rcp.HandlerReject, newInternalError(err, "can't check message id has been handled")
+			}
 
-func (h IdempotentHandler) Handle(d amqp.Delivery) (uint8, error) {
-	messageId := d.MessageId
-	if len(messageId) == 0 {
-		return h.origin.Handle(d)
+			if has {
+				return rcp.HandlerAck, nil
+			}
+
+			return ids.Save(messageId, func() (uint8, error) {
+				return wrapped.Handle(d)
+			})
+		},
 	}
-
-	has, err := h.ids.Has(messageId)
-	if nil != err {
-		return recipient.HandlerReject, newInternalError(err, "can't check message id has been handled")
-	}
-
-	if has {
-		return recipient.HandlerAck, nil
-	}
-
-	return h.ids.Save(messageId, func() (uint8, error) {
-		return h.origin.Handle(d)
-	})
 }

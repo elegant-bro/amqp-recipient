@@ -2,21 +2,21 @@ package handlers
 
 import (
 	"fmt"
-	amqpRecipient "github.com/elegant-bro/amqp-recipient"
+	rcp "github.com/elegant-bro/amqp-recipient"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type MapHandler struct {
-	handlersMap   map[string]amqpRecipient.JobHandler
+	handlersMap   rcp.MapOfHandlers
 	keyFn         func(delivery amqp.Delivery) (string, error)
 	onErrorResult uint8
 }
 
-func NewDefaultMap(handlersMap map[string]amqpRecipient.JobHandler, keyFn func(delivery amqp.Delivery) (string, error)) *MapHandler {
-	return NewMap(handlersMap, keyFn, amqpRecipient.HandlerAck)
+func NewDefaultMap(handlersMap rcp.MapOfHandlers, keyFn func(delivery amqp.Delivery) (string, error)) *MapHandler {
+	return NewMap(handlersMap, keyFn, rcp.HandlerAck)
 }
 
-func NewMap(handlersMap map[string]amqpRecipient.JobHandler, keyFn func(delivery amqp.Delivery) (string, error), onErrorResult uint8) *MapHandler {
+func NewMap(handlersMap rcp.MapOfHandlers, keyFn func(delivery amqp.Delivery) (string, error), onErrorResult uint8) *MapHandler {
 	return &MapHandler{handlersMap: handlersMap, keyFn: keyFn, onErrorResult: onErrorResult}
 }
 

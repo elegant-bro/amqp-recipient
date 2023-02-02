@@ -1,17 +1,17 @@
 package handlers
 
 import (
-	amqpRecipient "github.com/elegant-bro/amqp-recipient"
+	rcp "github.com/elegant-bro/amqp-recipient"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type PublishFailedHandler struct {
-	Origin      amqpRecipient.JobHandler
-	Sender      amqpRecipient.Sender
+	Origin      rcp.JobHandler
+	Sender      rcp.Sender
 	MakeHeaders func(d amqp.Delivery, err error) map[string]string
 }
 
-func NewPublishFailed(origin amqpRecipient.JobHandler, sender amqpRecipient.Sender, makeHeaders func(d amqp.Delivery, err error) map[string]string) *PublishFailedHandler {
+func NewPublishFailed(origin rcp.JobHandler, sender rcp.Sender, makeHeaders func(d amqp.Delivery, err error) map[string]string) rcp.JobHandler {
 	return &PublishFailedHandler{
 		Origin:      origin,
 		Sender:      sender,
@@ -19,15 +19,15 @@ func NewPublishFailed(origin amqpRecipient.JobHandler, sender amqpRecipient.Send
 	}
 }
 
-func NewPublishFailedStd(origin amqpRecipient.JobHandler, connection *amqp.Connection, exchange string, routingKey string) *PublishFailedHandler {
+func NewPublishFailedStd(origin rcp.JobHandler, connection *amqp.Connection, exchange string, routingKey string) rcp.JobHandler {
 	return NewPublishFailed(
 		origin,
-		amqpRecipient.NewAmqpSender(connection, exchange, routingKey),
+		rcp.NewAmqpSender(connection, exchange, routingKey),
 		defaultMakeHeaders,
 	)
 }
 
-func (f PublishFailedHandler) Handle(d amqp.Delivery) (uint8, error) {
+func (f *PublishFailedHandler) Handle(d amqp.Delivery) (uint8, error) {
 	res, err := f.Origin.Handle(d)
 	if nil != err {
 		var newHeaders amqp.Table
@@ -59,10 +59,10 @@ func (f PublishFailedHandler) Handle(d amqp.Delivery) (uint8, error) {
 			Body:            d.Body,
 		})
 		if nil != pubErr {
-			return amqpRecipient.HandlerRequeue, newInternalError(pubErr, "sending failed message fails")
+			return rcp.HandlerRequeue, newInternalError(pubErr, "sending failed message fails")
 		}
 
-		return amqpRecipient.HandlerAck, err
+		return rcp.HandlerAck, err
 	}
 
 	return res, nil

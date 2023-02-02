@@ -2,14 +2,14 @@ package handlers
 
 import (
 	"errors"
-	amqpRecipient "github.com/elegant-bro/amqp-recipient"
+	rcp "github.com/elegant-bro/amqp-recipient"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"testing"
 )
 
 func TestMapHandler_Handle(t *testing.T) {
 	res, err := NewDefaultMap(
-		map[string]amqpRecipient.JobHandler{
+		map[string]rcp.JobHandler{
 			"foo": NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 				return 0, errors.New("foo call")
 			}),
@@ -36,7 +36,7 @@ func TestMapHandler_Handle(t *testing.T) {
 
 func TestMapHandler_HandleEmptyMap(t *testing.T) {
 	res, err := NewDefaultMap(
-		map[string]amqpRecipient.JobHandler{
+		map[string]rcp.JobHandler{
 			"foo": NewFunc(func(d amqp.Delivery) (u uint8, err error) {
 				return 1, nil
 			}),
@@ -62,7 +62,7 @@ func TestMapHandler_HandleEmptyMap(t *testing.T) {
 
 func TestMapHandler_HandleKeyFuncFails(t *testing.T) {
 	res, err := NewMap(
-		map[string]amqpRecipient.JobHandler{},
+		map[string]rcp.JobHandler{},
 		func(delivery amqp.Delivery) (s string, err error) {
 			return "bar", nil
 		},
