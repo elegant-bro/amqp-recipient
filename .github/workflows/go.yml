@@ -24,9 +24,9 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Build
-        run: go build -v ./...
+        run: go build -race -v ./...
 
       - name: Test
         run: |
-          go test -race -v ./... -covermode=atomic -coverprofile=coverage.out
+          go test -v ./... -covermode=count -coverprofile=coverage.out
           go tool cover -func=coverage.out -o=coverage.out
