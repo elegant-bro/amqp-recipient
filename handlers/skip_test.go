@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"errors"
-	recipient "github.com/elegant-bro/amqp-recipient"
+	rcp "github.com/elegant-bro/amqp-recipient"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"testing"
 )
@@ -10,12 +10,12 @@ import (
 func TestSkipHandler_HandleSkipped(t *testing.T) {
 	res, err := NewSkip(
 		NewFunc(func(d amqp.Delivery) (uint8, error) {
-			return recipient.HandlerReject, errors.New("foo")
+			return rcp.HandlerReject, errors.New("foo")
 		}),
 		func(d amqp.Delivery) bool {
 			return true
 		},
-		recipient.HandlerAck,
+		rcp.HandlerAck,
 	).Handle(
 		amqp.Delivery{},
 	)
@@ -32,12 +32,12 @@ func TestSkipHandler_HandleSkipped(t *testing.T) {
 func TestSkipHandler_HandleNotSkipped(t *testing.T) {
 	res, err := NewSkip(
 		NewFunc(func(d amqp.Delivery) (uint8, error) {
-			return recipient.HandlerReject, errors.New("foo")
+			return rcp.HandlerReject, errors.New("foo")
 		}),
 		func(d amqp.Delivery) bool {
 			return false
 		},
-		recipient.HandlerAck,
+		rcp.HandlerAck,
 	).Handle(
 		amqp.Delivery{},
 	)
@@ -58,9 +58,9 @@ func TestSkipHandler_HandleNotSkipped(t *testing.T) {
 
 func TestSkipHandler_HandleSkipCalled(t *testing.T) {
 	skipCall := 0
-	_, _ = NewSkip(
+	_, _ = NewSkipAck(
 		NewFunc(func(d amqp.Delivery) (uint8, error) {
-			return recipient.HandlerReject, errors.New("foo")
+			return rcp.HandlerReject, errors.New("foo")
 		}),
 		func(d amqp.Delivery) bool {
 			skipCall++
@@ -69,7 +69,6 @@ func TestSkipHandler_HandleSkipCalled(t *testing.T) {
 			}
 			return true
 		},
-		recipient.HandlerAck,
 	).Handle(
 		amqp.Delivery{
 			MessageId: "82c90db9-501a-4334-afe6-f203198eb04f",
@@ -78,20 +77,5 @@ func TestSkipHandler_HandleSkipCalled(t *testing.T) {
 
 	if skipCall != 1 {
 		t.Errorf("Skip called %d times; 1 expected", skipCall)
-	}
-}
-
-func TestNewSkipAck(t *testing.T) {
-	h := NewSkipAck(
-		NewFunc(func(d amqp.Delivery) (uint8, error) {
-			return recipient.HandlerReject, errors.New("foo")
-		}),
-		func(d amqp.Delivery) bool {
-			return true
-		},
-	)
-
-	if h.res != recipient.HandlerAck {
-		t.Errorf("Handler skip result is %d; 0 expected", h.res)
 	}
 }

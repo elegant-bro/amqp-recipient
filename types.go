@@ -26,3 +26,7 @@ type HandledIds interface {
 }
 
 type OnHandlerFails func(d amqp.Delivery, err error)
+
+type MapOfHandlers map[string]JobHandler
+
+type Wrapper func(d amqp.Delivery, wrapped JobHandler) (uint8, error)

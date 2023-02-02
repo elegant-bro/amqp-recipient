@@ -2,6 +2,7 @@ package amqp_recipient
 
 import (
 	"errors"
+	"sync/atomic"
 	"testing"
 )
 
@@ -30,18 +31,17 @@ func TestOneRunEntry(t *testing.T) {
 }
 
 func TestRun_All(t *testing.T) {
-
-	runCalled := 0
+	var runCalled int32
 	run := NewRun(
 		[]RunEntry{
 			OneRunEntry(
 				NoErrorStubRecipient(NewStubJob(func() {
-					runCalled++
+					atomic.AddInt32(&runCalled, 1)
 				})),
 			),
 			NewRunEntry(
 				NoErrorStubRecipient(NewStubJob(func() {
-					runCalled++
+					atomic.AddInt32(&runCalled, 1)
 				})), 2,
 			),
 		},
@@ -58,17 +58,17 @@ func TestRun_All(t *testing.T) {
 }
 
 func TestRun_AllAsync(t *testing.T) {
-	runCalled := 0
+	var runCalled int32
 	run := NewRun(
 		[]RunEntry{
 			OneRunEntry(
 				NoErrorStubRecipient(NewStubJob(func() {
-					runCalled++
+					atomic.AddInt32(&runCalled, 1)
 				})),
 			),
 			NewRunEntry(
 				NoErrorStubRecipient(NewStubJob(func() {
-					runCalled++
+					atomic.AddInt32(&runCalled, 1)
 				})), 2,
 			),
 		},
@@ -85,7 +85,7 @@ func TestRun_AllAsync(t *testing.T) {
 }
 
 func TestRun_AllFail(t *testing.T) {
-	runCalled := 0
+	var runCalled int32
 	run := NewRun(
 		[]RunEntry{
 			OneRunEntry(
@@ -95,12 +95,12 @@ func TestRun_AllFail(t *testing.T) {
 			),
 			NewRunEntry(
 				NoErrorStubRecipient(NewStubJob(func() {
-					runCalled++
+					atomic.AddInt32(&runCalled, 1)
 				})), 2,
 			),
 		},
 		func(err error) {
-			runCalled++
+			atomic.AddInt32(&runCalled, 1)
 		},
 	)
 

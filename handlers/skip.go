@@ -1,28 +1,23 @@
 package handlers
 
 import (
-	recipient "github.com/elegant-bro/amqp-recipient"
+	rcp "github.com/elegant-bro/amqp-recipient"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type SkipHandler struct {
-	origin recipient.JobHandler
-	skip   func(d amqp.Delivery) bool
-	res    uint8
+func NewSkipAck(origin rcp.JobHandler, skip func(d amqp.Delivery) bool) rcp.JobHandler {
+	return NewSkip(origin, skip, rcp.HandlerAck)
 }
 
-func NewSkipAck(origin recipient.JobHandler, skip func(d amqp.Delivery) bool) *SkipHandler {
-	return NewSkip(origin, skip, recipient.HandlerAck)
-}
+func NewSkip(origin rcp.JobHandler, skip func(d amqp.Delivery) bool, res uint8) rcp.JobHandler {
+	return &WrapHandler{
+		origin: origin,
+		wrapper: func(d amqp.Delivery, wrapped rcp.JobHandler) (uint8, error) {
+			if skip(d) {
+				return res, nil
+			}
 
-func NewSkip(origin recipient.JobHandler, skip func(d amqp.Delivery) bool, res uint8) *SkipHandler {
-	return &SkipHandler{origin: origin, skip: skip, res: res}
-}
-
-func (s SkipHandler) Handle(d amqp.Delivery) (uint8, error) {
-	if s.skip(d) {
-		return s.res, nil
+			return wrapped.Handle(d)
+		},
 	}
-
-	return s.origin.Handle(d)
 }
